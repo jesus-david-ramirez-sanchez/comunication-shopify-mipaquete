@@ -1,0 +1,89 @@
+# This is a sample build configuration for JavaScript.
+# Check our guides at https://confluence.atlassian.com/x/14UWN for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: node:16
+
+pipelines:
+  pull-requests:
+    '**': #this runs as default for any branch not elsewhere defined
+     - step:
+          name: "run unit test"
+          script:
+            - yarn install
+            # - npm run test
+            # - npm run test:coverage
+            - yarn run lint
+  branches:
+     master:
+        - step:
+            name: "run unit test"
+            script:
+              - yarn install
+              # - npm run test
+        - step:
+            name: "build and push image"
+            deployment: Production
+            caches:
+              - node
+            services:
+              - docker
+            script: # Modify the commands below to build your repository.
+              - docker image build --build-arg ARGPORT=$PORT --build-arg ARGconnectionDB=$connectionDB  --build-arg ARGclientId=$clientId  --build-arg ARGclientSecret=$clientSecret --build-arg ARGuriMipaquete=$uriMipaquete --build-arg ARGorigin=$origin --build-arg ARGcustomerKey=$customerKey --build-arg ARGNODE_ENV=$NODE_ENV --build-arg ARGeventARN=$eventARN --build-arg ARGcarrierServiceUrl=$carrierServiceUrl -t $IMAGE_NAME .
+                # use the pipe to push the image to AWS ECR
+              - pipe: atlassian/aws-ecr-push-image:1.2.0
+                variables:
+                  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                  AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                  IMAGE_NAME: $IMAGE_NAME
+                  TAGS: "${BITBUCKET_TAG} latest"
+
+        - step:
+            name: "DEPLOYMENT ECS"
+            services:
+              - docker
+            script:
+              - apt-get update && apt-get install -y jq
+              - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle-1.16.312.zip" -o "awscli-bundle.zip"
+              - unzip awscli-bundle.zip
+              - ./awscli-bundle/install -b ~/bin/aws
+              - export PATH=~/bin:$PATH
+              - aws ecs update-service --cluster plugins-prod-cluster --service $SERVICE_NAME_PROD --force-new-deploymen
+
+     development:
+           - step:
+              name: "run unit test"
+              script:
+                - yarn install
+                # - yarn run test
+           - step:
+                name: "build and push image"
+                deployment: Dev
+                caches:
+                  - node
+                services:
+                  - docker
+                script: # Modify the commands below to build your repository.
+                  - docker image build --build-arg ARGPORT=$PORT --build-arg ARGconnectionDB=$connectionDB  --build-arg ARGclientId=$clientId  --build-arg ARGclientSecret=$clientSecret --build-arg ARGuriMipaquete=$uriMipaquete --build-arg ARGorigin=$origin --build-arg ARGcustomerKey=$customerKey --build-arg ARGNODE_ENV=$NODE_ENV --build-arg ARGeventARN=$eventARN --build-arg ARGcarrierServiceUrl=$carrierServiceUrl -t $IMAGE_NAME .
+                    # use the pipe to push the image to AWS ECR
+                  - pipe: atlassian/aws-ecr-push-image:1.2.0
+                    variables:
+                      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                      AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                      IMAGE_NAME: $IMAGE_NAME
+                      TAGS: "${BITBUCKET_TAG} latest"
+
+           - step:
+               name: "DEPLOYMENT ECS"
+               services:
+                 - docker
+               script:
+                 - apt-get update && apt-get install -y jq
+                 - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle-1.16.312.zip" -o "awscli-bundle.zip"
+                 - unzip awscli-bundle.zip
+                 - ./awscli-bundle/install -b ~/bin/aws
+                 - export PATH=~/bin:$PATH
+                 - aws ecs update-service --cluster plugins-dev-cluster --service $SERVICE_NAME_DEV --force-new-deploymen

@@ -1,0 +1,53 @@
+{
+    "rate": {
+        "origin": {
+            "country": "CO",
+            "postal_code": "050023",
+            "province": "ANT",
+            "city": "Medellin",
+            "name": "CALLE 7 81 40 APTO 704",
+            "address1": "CALLE 7 81 40 APTO 704",
+            "address2": null,
+            "address3": null,
+            "phone": "",
+            "fax": null,
+            "email": null,
+            "address_type": null,
+            "company_name": "Tutorial mipaquete"
+        },
+        "destination": {
+            "country": "CO",
+            "postal_code": "050023",
+            "province": "ANT",
+            "city": "Medellin",
+            "name": "CALLE 7 81 40 APTO 704",
+            "address1": "CALLE 7 81 40 APTO 704",
+            "address2": null,
+            "address3": null,
+            "phone": "",
+            "fax": null,
+            "email": null,
+            "address_type": null,
+            "company_name": "Tutorial mipaquete"
+        },
+        "items": [
+            {
+                "name": "",
+                "sku": "XXXXXXXX",
+                "quantity": 1,
+                "grams": 100,
+                "price": 0,
+                "vendor": null,
+                "requires_shipping": true,
+                "taxable": true,
+                "fulfillment_service": "manual",
+                "properties": null,
+                "product_id": null,
+                "variant_id": null
+            }
+        ],
+        "currency": "COP",
+        "locale": "es"
+    }
+}
+
